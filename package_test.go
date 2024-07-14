@@ -1,6 +1,7 @@
 package polyjson_test
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"testing"
@@ -22,14 +23,40 @@ func TestEvents(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	visitor := events.NewMockEventVisitor(ctrl)
 
-	visit := visitor.EXPECT().VisitFailedLogin(events.FailedLogin{IPAddress: "127.0.0.1"})
-	visit = visitor.EXPECT().VisitLogin(events.Login{Method: events.LoginUsernamePassword}).After(visit)
-	visit = visitor.EXPECT().VisitUpdateAttendance(events.UpdateAttendance{
+	visit := visitor.EXPECT().VisitFailedLogin(MatchJSON(events.FailedLogin{IPAddress: "127.0.0.1"}))
+	visit = visitor.EXPECT().VisitLogin(MatchJSON(events.Login{Method: events.LoginUsernamePassword})).After(visit)
+	visit = visitor.EXPECT().VisitUpdateAttendance(MatchJSON(events.UpdateAttendance{
 		DateID:  123,
 		Value:   events.WillNotAttend,
 		Comment: "meine Oma hat Geburtstag",
-	}).After(visit)
-	visitor.EXPECT().VisitLogout(events.Logout{}).After(visit)
+	})).After(visit)
+	visitor.EXPECT().VisitLogout(MatchJSON(events.Logout{})).After(visit)
 
 	require.True(t, e.Accept(visitor), "visitor did not match all events")
+}
+
+type JSONMatcher struct {
+	data []byte
+}
+
+// Matches implements gomock.Matcher.
+func (j JSONMatcher) Matches(x any) bool {
+	data, err := json.Marshal(x)
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(data, j.data)
+}
+
+// String implements gomock.Matcher.
+func (j JSONMatcher) String() string {
+	return string(j.data)
+}
+
+func MatchJSON(a any) gomock.Matcher {
+	data, err := json.Marshal(a)
+	if err != nil {
+		panic(err)
+	}
+	return JSONMatcher{data: data}
 }

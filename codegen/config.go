@@ -6,5 +6,14 @@ type Config struct {
 }
 
 var DefaultConfig = Config{
-	Generators: All,
+	Generators: []CodeGen{
+		VisitorInterfaceGen{},
+		PolyStructGen{},
+		SliceTypeGen{},
+		AcceptFuncGen{},
+		MarshalFuncGen{},
+		UnmarshalFuncGen{},
+		DefaultVisitorGen{},
+		VisitorFuncGen{},
+	},
 }

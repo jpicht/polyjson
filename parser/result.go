@@ -39,10 +39,17 @@ func (r *Result) load() (err error) {
 	r.Config.Packages.ParseFile = r.parseFile
 
 	for {
+		if r.Config.Verbose {
+			log.Println("load")
+		}
 		r.StdLib.Packages, err = packages.Load(&r.Config.Packages)
 
 		missing := make(map[string]string)
 		for _, inPkg := range r.StdLib.Packages {
+			if r.Config.Verbose {
+				log.Printf("  pkg %q", inPkg.Name)
+			}
+
 			if len(inPkg.TypeErrors) > 0 {
 				for _, te := range inPkg.TypeErrors {
 					if name, ok := strings.CutPrefix(te.Msg, "undefined: "); ok {
@@ -55,7 +62,9 @@ func (r *Result) load() (err error) {
 		}
 
 		for name, file := range missing {
-			log.Printf("adding %q to %q", name, file)
+			if r.Config.Verbose {
+				log.Printf("adding %q to %q", name, file)
+			}
 			r.Additional[file] = append(r.Additional[file], []byte(
 				fmt.Sprintf("\n\ntype %s struct {}", name),
 			)...)

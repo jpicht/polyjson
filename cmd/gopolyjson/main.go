@@ -46,7 +46,7 @@ func main() {
 		codegenConfig.OutputFileOptions = append(codegenConfig.OutputFileOptions, codegen.WithGoImports())
 	}
 
-	r, err := parser.DefaultConfig.Parse(directory)
+	r, err := parserConfig.Parse(directory)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func main() {
 			if parserConfig.Verbose {
 				log.Printf("generating %s", s.Name)
 			}
-			for _, g := range codegen.All {
+			for _, g := range codegenConfig.Generators {
 				func() {
 					defer func() {
 						if e := recover(); e != nil {

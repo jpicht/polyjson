@@ -1,6 +1,8 @@
 package events
 
-import "github.com/jpicht/polyjson"
+import (
+	"github.com/jpicht/polyjson"
+)
 
 type Login struct {
 	polyjson.Implements[Event]

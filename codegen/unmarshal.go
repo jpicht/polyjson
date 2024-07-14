@@ -47,7 +47,11 @@ func (UnmarshalFuncGen) GeneratePolyStruct(ctx *Context, p *generator.PolyStruct
 		fmt.Fprintf(ctx, "				in.AddError(polyjson.ErrMultipleValues)\n")
 		fmt.Fprintf(ctx, "			}\n")
 		fmt.Fprintf(ctx, "			haveValue = true\n")
-		fmt.Fprintf(ctx, "			ps.%s = new(%s)\n", impl.Struct.Name, impl.Struct.Name)
+
+		fmt.Fprintf(ctx, "			ps.%s = &%s{\n", impl.Struct.Name, impl.Struct.Name)
+		fmt.Fprintf(ctx, "				Implements: polyjson.Implements[%s]{ Parent: ps },\n", p.Name)
+		fmt.Fprintf(ctx, "			}\n")
+
 		if impl.Struct.Interfaces[parser.EasyJSONUnmarshaler] {
 			fmt.Fprintf(ctx, "			ps.%s.UnmarshalEasyJSON(in)\n", impl.Struct.Name)
 		} else if impl.Struct.Interfaces[parser.EncodingJSONUnmarshaler] {

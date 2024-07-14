@@ -134,7 +134,9 @@ func (ps *Event) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.FailedLogin = new(FailedLogin)
+			ps.FailedLogin = &FailedLogin{
+				Implements: polyjson.Implements[Event]{Parent: ps},
+			}
 			in.AddError(json.Unmarshal(in.Raw(), ps.FailedLogin))
 
 		case "login":
@@ -142,7 +144,9 @@ func (ps *Event) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.Login = new(Login)
+			ps.Login = &Login{
+				Implements: polyjson.Implements[Event]{Parent: ps},
+			}
 			in.AddError(json.Unmarshal(in.Raw(), ps.Login))
 
 		case "logout":
@@ -150,7 +154,9 @@ func (ps *Event) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.Logout = new(Logout)
+			ps.Logout = &Logout{
+				Implements: polyjson.Implements[Event]{Parent: ps},
+			}
 			in.AddError(json.Unmarshal(in.Raw(), ps.Logout))
 
 		case "update_attendance":
@@ -158,7 +164,9 @@ func (ps *Event) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.UpdateAttendance = new(UpdateAttendance)
+			ps.UpdateAttendance = &UpdateAttendance{
+				Implements: polyjson.Implements[Event]{Parent: ps},
+			}
 			in.AddError(json.Unmarshal(in.Raw(), ps.UpdateAttendance))
 
 		// common fields from Common

@@ -24,7 +24,7 @@ func TestParserToPolyStruct(t *testing.T) {
 		require.NoError(t, err)
 		for _, s := range poly {
 			t.Logf("%s: %v", s.Name, s.Impls)
-			for _, g := range codegen.All {
+			for _, g := range codegen.DefaultConfig.Generators {
 				g.GeneratePolyStruct(ctx, s)
 			}
 		}

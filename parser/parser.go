@@ -38,44 +38,12 @@ func (config *Config) Parse(directory string) (*Result, error) {
 
 	r.StdLib.FileSet = token.NewFileSet()
 
-	r.Helpers.MarkerTests = make(map[att.Marker]func(types.Type) bool, len(config.Markers))
-	r.Helpers.InterfaceTests = make(map[att.Marker]func(types.Type) bool, len(config.Interfaces))
-
 	if err := r.load(); err != nil {
 		return nil, err
 	}
 
-	for _, marker := range config.Markers {
-		if _, ok := r.Helpers.MarkerTests[marker]; ok {
-			continue
-		}
-		for _, inPkg := range r.StdLib.Packages {
-			pkg, ok := inPkg.Imports[marker.Package]
-			if !ok {
-				continue
-			}
-			markerInterface := pkg.Types.Scope().Lookup(marker.InterfaceName)
-			if markerInterface != nil {
-				r.Helpers.MarkerTests[marker] = makeMarkerCheck(markerInterface.Type())
-			}
-		}
-	}
-
-	for _, iface := range config.Interfaces {
-		if _, ok := r.Helpers.InterfaceTests[iface]; ok {
-			continue
-		}
-		for _, inPkg := range r.StdLib.Packages {
-			pkg, ok := inPkg.Imports[iface.Package]
-			if !ok {
-				continue
-			}
-			markerInterface := pkg.Types.Scope().Lookup(iface.InterfaceName)
-			if markerInterface != nil {
-				r.Helpers.InterfaceTests[iface] = makeMarkerCheck(markerInterface.Type())
-			}
-		}
-	}
+	r.Helpers.MarkerTests, _ = resolveMarkers(config, config.Markers, r.StdLib.Packages)
+	r.Helpers.InterfaceTests, _ = resolveMarkers(config, config.Interfaces, r.StdLib.Packages)
 
 	for _, inPkg := range r.StdLib.Packages {
 		outPkg, err := r.parsePackage(inPkg)
@@ -163,6 +131,9 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 			}
 
 			if isMarker {
+				if r.Config.Verbose {
+					log.Printf("  marker %s on %s", field, structT)
+				}
 				continue
 			}
 
