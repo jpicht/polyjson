@@ -10,3 +10,6 @@ type Implements[IF any] struct {
 	Parent             *IF `json:"-"`
 }
 type Common[IF any] struct{ markers.Common }
+type TypeID[IF any] string
+
+func (t TypeID[IF]) TypeID() string { return string(t) }

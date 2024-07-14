@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	Interfaces []att.Marker
-	Markers    []att.Marker
-	Packages   packages.Config
-	Verbose    bool
+	Interfaces  []att.Marker
+	Markers     []att.Marker
+	TypeMarkers []att.Marker
+	Packages    packages.Config
+	Verbose     bool
 }
 
 var DefaultConfig = Config{
@@ -17,6 +18,9 @@ var DefaultConfig = Config{
 		MarkerCommon,
 		MarkerImplements,
 		MarkerInterface,
+	},
+	TypeMarkers: []att.Marker{
+		MarkerTypeID,
 	},
 	Interfaces: []att.Marker{
 		EasyJSONUnmarshaler,

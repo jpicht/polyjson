@@ -8,6 +8,7 @@ import (
 type Interface interface{ isInterface() }
 type Implements interface{ isImplementation() }
 type Common interface{ isCommon() }
+type TypeID interface{ TypeID() string }
 
 type EasyJSONUnmarshaller = easyjson.Unmarshaler
 

@@ -7,17 +7,18 @@ import (
 	"testing"
 
 	"github.com/jpicht/polyjson/testdata/events"
+	"github.com/jpicht/polyjson/testdata/typefield"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
 //go:embed testdata/events/example.json
-var jsondata []byte
+var eventsJSON []byte
 
 func TestEvents(t *testing.T) {
 	var e events.EventSlice
 
-	require.NoError(t, json.Unmarshal(jsondata, &e), "cannot unmarshal test data into slice")
+	require.NoError(t, json.Unmarshal(eventsJSON, &e), "cannot unmarshal test data into slice")
 	require.Len(t, e, 4, "missing or superflous elements in events slice")
 
 	ctrl := gomock.NewController(t)
@@ -30,6 +31,25 @@ func TestEvents(t *testing.T) {
 		Value:   events.WillNotAttend,
 		Comment: "meine Oma hat Geburtstag",
 	})).After(visit)
+	visitor.EXPECT().VisitLogout(MatchJSON(events.Logout{})).After(visit)
+
+	require.True(t, e.Accept(visitor), "visitor did not match all events")
+}
+
+//go:embed testdata/typefield/example.json
+var typefieldJSON []byte
+
+func TestTypeField(t *testing.T) {
+	var e typefield.EventSlice
+
+	require.NoError(t, json.Unmarshal(typefieldJSON, &e), "cannot unmarshal test data into slice")
+	require.Len(t, e, 3, "missing or superflous elements in events slice")
+
+	ctrl := gomock.NewController(t)
+	visitor := typefield.NewMockEventVisitor(ctrl)
+
+	visit := visitor.EXPECT().VisitFailedLogin(MatchJSON(events.FailedLogin{IPAddress: "127.0.0.1"}))
+	visit = visitor.EXPECT().VisitLogin(MatchJSON(events.Login{Method: events.LoginUsernamePassword})).After(visit)
 	visitor.EXPECT().VisitLogout(MatchJSON(events.Logout{})).After(visit)
 
 	require.True(t, e.Accept(visitor), "visitor did not match all events")

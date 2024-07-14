@@ -7,4 +7,5 @@ import (
 type Package struct {
 	*packages.Package
 	NamedStructs []*NamedStruct
+	TypeMarkers  []TypeMarker
 }

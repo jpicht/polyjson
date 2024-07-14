@@ -17,6 +17,7 @@ type PolyStruct struct {
 	Common     *att.NamedStruct
 	Interface  *att.NamedStruct
 	Additional *att.Field
+	TypeID     *att.TypeMarker
 	Impls      []PolyImpl
 }
 
@@ -38,6 +39,17 @@ func PolyStructs(pkg *att.Package) (out []*PolyStruct, _ error) {
 			out = append(out, ps)
 		}
 		return ps
+	}
+
+	for _, tm := range pkg.TypeMarkers {
+		switch tm.Marker {
+		case parser.MarkerTypeID:
+			ps := ps(tm.Target)
+			if ps.TypeID != nil {
+				return nil, fmt.Errorf("two type ID fields for %q: %q and %q", tm.Target, ps.TypeID.Name, tm.Name)
+			}
+			ps.TypeID = &tm
+		}
 	}
 
 	for _, s := range pkg.NamedStructs {

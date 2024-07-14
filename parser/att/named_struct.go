@@ -36,3 +36,15 @@ func (n *NamedStruct) Is(m Marker) bool {
 func (mv MarkerValue) String() string {
 	return "[-> " + mv.Target + "]"
 }
+
+func (n *NamedStruct) FindField(tm TypeMarker) *Field {
+	if n == nil {
+		return nil
+	}
+	for _, f := range n.Fields {
+		if f.Type == tm.Type {
+			return f
+		}
+	}
+	return nil
+}

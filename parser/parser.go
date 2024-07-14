@@ -12,6 +12,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+const debug = false
+
 type Result struct {
 	Config *Config
 	StdLib struct {
@@ -22,8 +24,9 @@ type Result struct {
 	Directory  string
 	Packages   []*att.Package
 	Helpers    struct {
-		InterfaceTests map[att.Marker]func(types.Type) bool
-		MarkerTests    map[att.Marker]func(types.Type) bool
+		InterfaceTests  map[att.Marker]func(types.Type) bool
+		TypeMarkerTests map[att.Marker]func(types.Type) bool
+		MarkerTests     map[att.Marker]func(types.Type) bool
 	}
 }
 
@@ -43,6 +46,7 @@ func (config *Config) Parse(directory string) (*Result, error) {
 	}
 
 	r.Helpers.MarkerTests, _ = resolveMarkers(config, config.Markers, r.StdLib.Packages)
+	r.Helpers.TypeMarkerTests, _ = resolveMarkers(config, config.TypeMarkers, r.StdLib.Packages)
 	r.Helpers.InterfaceTests, _ = resolveMarkers(config, config.Interfaces, r.StdLib.Packages)
 
 	for _, inPkg := range r.StdLib.Packages {
@@ -81,10 +85,44 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 	for _, name := range scope.Names() {
 		obj := scope.Lookup(name)
 
+		isMarker := false
+		for marker, tm := range r.Helpers.TypeMarkerTests {
+			if !tm(obj.Type()) {
+				continue
+			}
+
+			tt := obj.Type()
+
+			t, ok := getFirstTypeArg[*types.Named](tt)
+			if !ok {
+				continue
+			}
+
+			outPkg.TypeMarkers = append(outPkg.TypeMarkers, att.TypeMarker{
+				Marker: marker,
+				Target: t.Obj().Name(),
+				Name:   name,
+				Type:   tt,
+			})
+
+			isMarker = true
+
+			log.Printf("type marker %s: %s for %s ", marker.InterfaceName, name, t.Obj().Name())
+		}
+
+		if isMarker {
+			continue
+		}
+
+		if debug {
+			log.Printf("obj[%s]: %T -> %T", types.TypeString(obj.Type(), qual), obj, obj.Type())
+			log.Printf("  %s", types.TypeString(obj.Type().Underlying(), qual))
+		}
+
 		named, structT, ok := getStruct(obj.Type())
 		if !ok {
 			if r.Config.Verbose {
-				log.Printf("skipping %q (%T)", name, types.TypeString(obj.Type(), qual))
+				log.Printf("skipping %q (%s)", name, types.TypeString(obj.Type(), qual))
 			}
 			continue
 		}
@@ -116,7 +154,7 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 					if !ok {
 						//	log.Printf("invalid type argument len %d, expected 1", args.Len())
 						if r.Config.Verbose {
-							log.Printf("skipping field %#v, no type arg", field)
+							log.Printf("skipping field %s on %s, no type arg", f.Name, outStruct.Name)
 						}
 						continue
 					}
@@ -132,7 +170,7 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 
 			if isMarker {
 				if r.Config.Verbose {
-					log.Printf("  marker %s on %s", field, structT)
+					log.Printf("  marker %s on %s", f.Name, outStruct.Name)
 				}
 				continue
 			}
@@ -145,6 +183,10 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 			}
 
 			outStruct.Fields = append(outStruct.Fields, f)
+
+			if r.Config.Verbose {
+				log.Printf("  field %s.%s (%s)", outStruct.Name, f.Name, types.TypeString(f.Type, qual))
+			}
 		}
 
 		for iface, testFn := range r.Helpers.InterfaceTests {
@@ -160,8 +202,13 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 	return &outPkg, nil
 }
 
-func getStruct(t types.Type) (named *types.Named, structT *types.Struct, ok bool) {
+func getNamed(t types.Type) (named *types.Named, ok bool) {
 	named, ok = t.(*types.Named)
+	return
+}
+
+func getStruct(t types.Type) (named *types.Named, structT *types.Struct, ok bool) {
+	named, ok = getNamed(t)
 	if !ok {
 		return
 	}
@@ -174,6 +221,8 @@ func getTypeArgs(t types.Type) *types.TypeList {
 	switch typed := t.(type) {
 	case *types.Named:
 		return typed.TypeArgs()
+	case *types.Alias:
+		return getTypeArgs(typed.Obj().Type())
 	case *types.Basic:
 		return nil
 	default:

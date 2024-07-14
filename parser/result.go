@@ -18,7 +18,7 @@ func (r *Result) parseFile(fset *token.FileSet, filename string, src []byte) (*a
 		src = append(src, additional...)
 	}
 
-	if strings.HasSuffix(filename, "_polyjson.go") {
+	if strings.HasSuffix(filename, "_polyjson.go") || strings.HasSuffix(filename, "_mock.go") {
 		log.Printf("pre-parsing file %q", filename)
 		scanner := bufio.NewScanner(bytes.NewBuffer(src))
 		for scanner.Scan() {

@@ -24,3 +24,10 @@ func JSONTag(name string, tag reflect.StructTag) string {
 	}
 	return strcase.SnakeCase(name) + ",omitempty"
 }
+
+func TypeID(name string, tag reflect.StructTag) string {
+	if v, ok := tag.Lookup("polytypeid"); ok {
+		return v
+	}
+	return strcase.SnakeCase(name)
+}

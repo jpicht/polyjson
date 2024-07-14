@@ -16,6 +16,7 @@ var (
 	MarkerImplements        = att.Mark("github.com/jpicht/polyjson/markers", "Implements")
 	MarkerCommon            = att.Mark("github.com/jpicht/polyjson/markers", "Common")
 	MarkerInterface         = att.Mark("github.com/jpicht/polyjson/markers", "Interface")
+	MarkerTypeID            = att.Mark("github.com/jpicht/polyjson/markers", "TypeID")
 	AdditionalFields        = att.Mark("github.com/jpicht/polyjson/markers", "AdditionalFields")
 	JWriterWritable         = att.Mark("github.com/launchdarkly/go-jsonstream/v3", "Writable")
 	EasyJSONUnmarshaler     = att.Mark("github.com/mailru/easyjson", "Unmarshaler")

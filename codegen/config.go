@@ -7,6 +7,7 @@ type Config struct {
 
 var DefaultConfig = Config{
 	Generators: []CodeGen{
+		TypeFieldGen{},
 		VisitorInterfaceGen{},
 		PolyStructGen{},
 		SliceTypeGen{},
