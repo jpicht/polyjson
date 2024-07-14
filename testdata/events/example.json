@@ -1,0 +1,29 @@
+[
+	{
+		"time": "2024-07-09T12:30:00.99999999Z",
+		"failed_login": {
+			"ip_address": "127.0.0.1"
+		}
+	},
+	{
+		"time": "2024-07-09T12:32:00.11111111Z",
+		"user_id": 1,
+		"login": {
+			"method": "password"
+		}
+	},
+	{
+		"time": "2024-07-09T12:34:00.22222222Z",
+		"user_id": 1,
+		"update_attendance": {
+			"date_id": 123,
+			"value": "no",
+			"comment": "meine Oma hat Geburtstag"
+		}
+	},
+	{
+		"time": "2024-07-09T12:40:00.11111111Z",
+		"user_id": 1,
+		"logout": {}
+	}
+]

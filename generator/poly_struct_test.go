@@ -13,7 +13,7 @@ func TestParserToPolyStruct(t *testing.T) {
 	c := parser.Config{
 		Markers: []att.Marker{
 			parser.MarkerCommon,
-			parser.MarkerIs,
+			parser.MarkerImplements,
 		},
 	}
 	r, err := c.Parse("../testdata")

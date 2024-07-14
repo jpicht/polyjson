@@ -11,7 +11,8 @@ type AcceptFuncGen struct{}
 func (AcceptFuncGen) GeneratePolyStruct(w *Context, p *generator.PolyStruct) error {
 	fmt.Fprintf(w, "func (ps *%s) Accept(v %sVisitor) bool {\n", p.Name, p.Name)
 	for _, impl := range p.Impls {
-		fmt.Fprintf(w, "\tif ps.%s.Accept(v.Visit%s) {\n", impl.Struct.Name, impl.Struct.Name)
+		fmt.Fprintf(w, "\tif ps.%s != nil {\n", impl.Struct.Name)
+		fmt.Fprintf(w, "\t\tv.Visit%s(*ps.%s)\n", impl.Struct.Name, impl.Struct.Name)
 		fmt.Fprintf(w, "\t\treturn true\n")
 		fmt.Fprintf(w, "\t}\n")
 	}

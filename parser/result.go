@@ -1,12 +1,13 @@
 package parser
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"log"
-	"slices"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -17,43 +18,20 @@ func (r *Result) parseFile(fset *token.FileSet, filename string, src []byte) (*a
 		src = append(src, additional...)
 	}
 
-	f, err := parser.ParseFile(fset, filename, src, parser.AllErrors)
-	if err != nil || !strings.HasSuffix(filename, "_polyjson.go") {
-		return f, err
+	if strings.HasSuffix(filename, "_polyjson.go") {
+		log.Printf("pre-parsing file %q", filename)
+		scanner := bufio.NewScanner(bytes.NewBuffer(src))
+		for scanner.Scan() {
+			txt := scanner.Text()
+			if strings.HasPrefix(txt, "package ") {
+				src = []byte(txt + "\n")
+				break
+			}
+		}
 	}
 
-	log.Printf("pre-parsing file %q", filename)
-
-	f.Decls = slices.DeleteFunc(f.Decls, func(decl ast.Decl) bool {
-		switch typeDecl := decl.(type) {
-		case *ast.GenDecl:
-			for _, spec := range typeDecl.Specs {
-				typeSpec, ok := spec.(*ast.TypeSpec)
-				if !ok {
-					continue
-				}
-
-				structSpec, ok := typeSpec.Type.(*ast.StructType)
-				if !ok {
-					continue
-				}
-
-				structSpec.Fields = nil
-				log.Printf("\tremoving fields from struct %v", typeSpec.Name)
-			}
-
-		case *ast.BadDecl:
-			return true
-
-		case *ast.FuncDecl:
-			return true
-
-		default:
-		}
-		return false
-	})
-
-	return f, nil
+	f, err := parser.ParseFile(fset, filename, src, parser.AllErrors)
+	return f, err
 }
 
 func (r *Result) load() (err error) {

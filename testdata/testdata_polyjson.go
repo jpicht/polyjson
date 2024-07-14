@@ -19,17 +19,19 @@ type AB struct {
 	CommonAB
 
 	// implementations
-	A polyjson.OneOf[A] `json:"a,omitempty"`
-	B polyjson.OneOf[B] `json:"b,omitempty"`
+	A *A `json:"a,omitempty"`
+	B *B `json:"b,omitempty"`
 }
 
 type ABSlice []AB
 
 func (ps *AB) Accept(v ABVisitor) bool {
-	if ps.A.Accept(v.VisitA) {
+	if ps.A != nil {
+		v.VisitA(*ps.A)
 		return true
 	}
-	if ps.B.Accept(v.VisitB) {
+	if ps.B != nil {
+		v.VisitB(*ps.B)
 		return true
 	}
 	return false
@@ -58,10 +60,14 @@ func (ps *AB) WriteToJSONWriter(w *jwriter.Writer) {
 	w.AddError(err)
 
 	// implementations
-	if ps.A.Valid() {
-		ps.A.WriteToJSONWriter(o.Name("a"))
-	} else if ps.B.Valid() {
-		ps.B.WriteToJSONWriter(o.Name("b"))
+	if ps.A != nil {
+		raw, err := json.Marshal(ps.A)
+		o.Maybe("a", len(raw) > 0).Raw(raw)
+		w.AddError(err)
+	} else if ps.B != nil {
+		raw, err := json.Marshal(ps.B)
+		o.Maybe("b", len(raw) > 0).Raw(raw)
+		w.AddError(err)
 	} else {
 		w.AddError(polyjson.ErrNoValue)
 	}
@@ -102,14 +108,16 @@ func (ps *AB) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.A.UnmarshalEasyJSON(in)
+			ps.A = new(A)
+			in.AddError(json.Unmarshal(in.Raw(), ps.A))
 
 		case "b":
 			if haveValue {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.B.UnmarshalEasyJSON(in)
+			ps.B = new(B)
+			in.AddError(ps.B.Unmarshal(in.Raw()))
 
 		// common fields from CommonAB
 		case "timestamp":
@@ -178,17 +186,19 @@ type CD struct {
 	CommonCD
 
 	// implementations
-	C polyjson.OneOf[C] `json:"c,omitempty"`
-	D polyjson.OneOf[D] `json:"d,omitempty"`
+	C *C `json:"c,omitempty"`
+	D *D `json:"d,omitempty"`
 }
 
 type CDSlice []CD
 
 func (ps *CD) Accept(v CDVisitor) bool {
-	if ps.C.Accept(v.VisitC) {
+	if ps.C != nil {
+		v.VisitC(*ps.C)
 		return true
 	}
-	if ps.D.Accept(v.VisitD) {
+	if ps.D != nil {
+		v.VisitD(*ps.D)
 		return true
 	}
 	return false
@@ -223,10 +233,14 @@ func (ps *CD) WriteToJSONWriter(w *jwriter.Writer) {
 	w.AddError(err)
 
 	// implementations
-	if ps.C.Valid() {
-		ps.C.WriteToJSONWriter(o.Name("c"))
-	} else if ps.D.Valid() {
-		ps.D.WriteToJSONWriter(o.Name("d"))
+	if ps.C != nil {
+		raw, err := json.Marshal(ps.C)
+		o.Maybe("c", len(raw) > 0).Raw(raw)
+		w.AddError(err)
+	} else if ps.D != nil {
+		raw, err := json.Marshal(ps.D)
+		o.Maybe("d", len(raw) > 0).Raw(raw)
+		w.AddError(err)
 	} else {
 		w.AddError(polyjson.ErrNoValue)
 	}
@@ -268,6 +282,7 @@ func (ps *CD) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
+			ps.C = new(C)
 			ps.C.UnmarshalEasyJSON(in)
 
 		case "d":
@@ -275,7 +290,8 @@ func (ps *CD) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.D.UnmarshalEasyJSON(in)
+			ps.D = new(D)
+			in.AddError(json.Unmarshal(in.Raw(), ps.D))
 
 		// common fields from CommonCD
 		case "timestamp":
@@ -344,17 +360,19 @@ type EF struct {
 	CommonEF
 
 	// implementations
-	E polyjson.OneOf[E] `json:"e,omitempty"`
-	F polyjson.OneOf[F] `json:"f,omitempty"`
+	E *E `json:"e,omitempty"`
+	F *F `json:"f,omitempty"`
 }
 
 type EFSlice []EF
 
 func (ps *EF) Accept(v EFVisitor) bool {
-	if ps.E.Accept(v.VisitE) {
+	if ps.E != nil {
+		v.VisitE(*ps.E)
 		return true
 	}
-	if ps.F.Accept(v.VisitF) {
+	if ps.F != nil {
+		v.VisitF(*ps.F)
 		return true
 	}
 	return false
@@ -374,10 +392,14 @@ func (ps *EF) WriteToJSONWriter(w *jwriter.Writer) {
 	defer o.End()
 
 	// implementations
-	if ps.E.Valid() {
-		ps.E.WriteToJSONWriter(o.Name("e"))
-	} else if ps.F.Valid() {
-		ps.F.WriteToJSONWriter(o.Name("f"))
+	if ps.E != nil {
+		raw, err := json.Marshal(ps.E)
+		o.Maybe("e", len(raw) > 0).Raw(raw)
+		w.AddError(err)
+	} else if ps.F != nil {
+		raw, err := json.Marshal(ps.F)
+		o.Maybe("f", len(raw) > 0).Raw(raw)
+		w.AddError(err)
 	} else {
 		w.AddError(polyjson.ErrNoValue)
 	}
@@ -418,14 +440,16 @@ func (ps *EF) UnmarshalEasyJSON(in *jlexer.Lexer) {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.E.UnmarshalEasyJSON(in)
+			ps.E = new(E)
+			in.AddError(json.Unmarshal(in.Raw(), ps.E))
 
 		case "f":
 			if haveValue {
 				in.AddError(polyjson.ErrMultipleValues)
 			}
 			haveValue = true
-			ps.F.UnmarshalEasyJSON(in)
+			ps.F = new(F)
+			in.AddError(json.Unmarshal(in.Raw(), ps.F))
 
 		// unknown fields are allowed
 		default:

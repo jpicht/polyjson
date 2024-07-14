@@ -9,12 +9,14 @@ type Config struct {
 	Interfaces []att.Marker
 	Markers    []att.Marker
 	Packages   packages.Config
+	Verbose    bool
 }
 
 var DefaultConfig = Config{
 	Markers: []att.Marker{
 		MarkerCommon,
-		MarkerIs,
+		MarkerImplements,
+		MarkerInterface,
 	},
 	Interfaces: []att.Marker{
 		EasyJSONUnmarshaler,

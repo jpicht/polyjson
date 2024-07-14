@@ -12,7 +12,7 @@ func TestParser(t *testing.T) {
 	c := Config{
 		Markers: []att.Marker{
 			MarkerCommon,
-			MarkerIs,
+			MarkerImplements,
 		},
 	}
 	r, err := c.Parse("../testdata")

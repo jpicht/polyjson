@@ -15,6 +15,7 @@ type PolyStruct struct {
 	TargetFile string
 	Package    *att.Package
 	Common     *att.NamedStruct
+	Interface  *att.NamedStruct
 	Additional *att.Field
 	Impls      []PolyImpl
 }
@@ -42,18 +43,26 @@ func PolyStructs(pkg *att.Package) (out []*PolyStruct, _ error) {
 	for _, s := range pkg.NamedStructs {
 		for m, mv := range s.Markers {
 			switch m {
-			case parser.MarkerIs:
+			case parser.MarkerImplements:
 				ps := ps(mv.Target)
 				ps.Impls = append(ps.Impls, PolyImpl{
 					Struct: s,
 					Value:  mv,
 				})
+
 			case parser.MarkerCommon:
 				ps := ps(mv.Target)
 				if ps.Common != nil {
 					return nil, fmt.Errorf("two commons for %q: %q and %q", mv, ps.Common, s)
 				}
 				ps.Common = s
+
+			case parser.MarkerInterface:
+				ps := ps(mv.Target)
+				if ps.Interface != nil {
+					return nil, fmt.Errorf("two interfaces for %q: %q and %q", mv, ps.Interface, s)
+				}
+				ps.Interface = s
 			}
 		}
 	}

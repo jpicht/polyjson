@@ -9,14 +9,16 @@ import (
 )
 
 type A struct {
-	A               string
-	polyjson.Is[AB] `polyjson:"a,omitempty"`
+	A                       string
+	polyjson.Implements[AB] `polyjson:"a,omitempty"`
 }
 
 type B struct {
-	B               string
-	polyjson.Is[AB] `polyjson:"b,omitempty"`
+	B                       string
+	polyjson.Implements[AB] `polyjson:"b,omitempty"`
 }
+
+func (*B) UnmarshalJSON([]byte) error { return nil }
 
 type CommonAB struct {
 	polyjson.Common[AB]
@@ -24,9 +26,11 @@ type CommonAB struct {
 }
 
 type C struct {
-	C               string
-	polyjson.Is[CD] `polyjson:"c,omitempty"`
+	C                       string
+	polyjson.Implements[CD] `polyjson:"c,omitempty"`
 }
+
+func (*C) UnmarshalEasyJSON(l *jlexer.Lexer) { l.SkipRecursive() }
 
 type D struct {
 	D                       string
@@ -42,8 +46,8 @@ type CommonCD struct {
 }
 
 type E struct {
-	E               string
-	polyjson.Is[EF] `polyjson:"e,omitempty"`
+	E                       string
+	polyjson.Implements[EF] `polyjson:"e,omitempty"`
 }
 
 type F struct {

@@ -18,11 +18,13 @@ func main() {
 		format        bool
 		fumpt         bool
 		imports       bool
+		config        = parser.DefaultConfig
 		outputOptions []codegen.OutputFileOption
 	)
 	pflag.BoolVarP(&format, "format", "f", false, "run go fmt")
 	pflag.BoolVarP(&fumpt, "fumpt", "F", false, "run gofumpt")
 	pflag.BoolVarP(&imports, "imports", "i", false, "run goimports")
+	pflag.BoolVarP(&config.Verbose, "verbose", "v", false, "verbose logging")
 	pflag.Parse()
 
 	if pflag.NArg() > 0 {
@@ -76,7 +78,9 @@ func main() {
 				defer of.Close()
 				cleanup = append(cleanup, s.TargetFile)
 			}
-			log.Printf("generating %s", s.Name)
+			if config.Verbose {
+				log.Printf("generating %s", s.Name)
+			}
 			for _, g := range codegen.All {
 				func() {
 					defer func() {

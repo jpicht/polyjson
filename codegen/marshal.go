@@ -35,12 +35,19 @@ func (MarshalFuncGen) GeneratePolyStruct(ctx *Context, p *generator.PolyStruct) 
 	fmt.Fprintf(ctx, "	// implementations\n")
 	elseStr := ""
 	for _, impl := range p.Impls {
+		fmt.Fprintf(ctx, "	%sif ps.%s != nil {\n", elseStr, impl.Struct.Name)
 		if impl.Struct.Interfaces[parser.JWriterWritable] {
-			fmt.Fprintf(ctx, "	%sif value, ok := ps.%s.Get(); ok {\n", elseStr, impl.Struct.Name)
-			fmt.Fprintf(ctx, "		value.WriteToJSONWriter(o.Name(%q))\n", JSONName(impl.Struct.Name, impl.Value.Tag))
+			fmt.Fprintf(ctx, "		ps.%s.WriteToJSONWriter(o.Name(%q))\n", impl.Struct.Name, JSONName(impl.Struct.Name, impl.Value.Tag))
+		} else if impl.Struct.Interfaces[parser.EncodingJSONMarshaler] {
+			fmt.Fprintf(ctx, "		raw, err := ps.%s.MarshalJSON()\n", impl.Struct.Name)
+			fmt.Fprintf(ctx, "		o.Maybe(%q, len(raw) > 0).Raw(raw)\n", JSONName(impl.Struct.Name, impl.Value.Tag))
+			fmt.Fprintf(ctx, "		w.AddError(err)\n")
+		} else {
+			ctx.Imports["encoding/json"] = "json"
+			fmt.Fprintf(ctx, "		raw, err := json.Marshal(ps.%s)\n", impl.Struct.Name)
+			fmt.Fprintf(ctx, "		o.Maybe(%q, len(raw) > 0).Raw(raw)\n", JSONName(impl.Struct.Name, impl.Value.Tag))
+			fmt.Fprintf(ctx, "		w.AddError(err)\n")
 		}
-		fmt.Fprintf(ctx, "	%sif ps.%s.Valid() {\n", elseStr, impl.Struct.Name)
-		fmt.Fprintf(ctx, "		ps.%s.WriteToJSONWriter(o.Name(%q))\n", impl.Struct.Name, JSONName(impl.Struct.Name, impl.Value.Tag))
 		elseStr = "} else "
 	}
 	fmt.Fprintln(ctx, "	} else {")

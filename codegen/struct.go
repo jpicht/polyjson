@@ -16,7 +16,7 @@ func (PolyStructGen) GeneratePolyStruct(w *Context, p *generator.PolyStruct) err
 	}
 	fmt.Fprintf(w, "\t// implementations\n")
 	for _, impl := range p.Impls {
-		fmt.Fprintf(w, "\t%s polyjson.OneOf[%s] `json:\"%s\"`\n", impl.Struct.Name, impl.Struct.Name, JSONTag(impl.Struct.Name, impl.Value.Tag))
+		fmt.Fprintf(w, "\t%s *%s `json:\"%s\"`\n", impl.Struct.Name, impl.Struct.Name, JSONTag(impl.Struct.Name, impl.Value.Tag))
 	}
 	fmt.Fprintf(w, "}\n\n")
 	return nil

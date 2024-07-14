@@ -115,6 +115,9 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 
 		named, structT, ok := getStruct(obj.Type())
 		if !ok {
+			if r.Config.Verbose {
+				log.Printf("skipping %q (%T)", name, types.TypeString(obj.Type(), qual))
+			}
 			continue
 		}
 
@@ -144,7 +147,9 @@ func (r *Result) parsePackage(inPkg *packages.Package) (*att.Package, error) {
 					t, ok := getFirstTypeArg[*types.Named](field.Type())
 					if !ok {
 						//	log.Printf("invalid type argument len %d, expected 1", args.Len())
-						log.Printf("skipping field %#v, no type arg", field)
+						if r.Config.Verbose {
+							log.Printf("skipping field %#v, no type arg", field)
+						}
 						continue
 					}
 					target := types.TypeString(t, qual)
