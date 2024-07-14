@@ -20,7 +20,7 @@ func TestParserToPolyStruct(t *testing.T) {
 
 	for _, pkg := range r.Packages {
 		poly, err := generator.PolyStructs(pkg)
-		ctx := codegen.NewContext(pkg, buf)
+		ctx := codegen.DefaultConfig.NewContext(pkg, buf)
 		require.NoError(t, err)
 		for _, s := range poly {
 			t.Logf("%s: %v", s.Name, s.Impls)

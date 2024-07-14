@@ -18,13 +18,13 @@ func main() {
 		format        bool
 		fumpt         bool
 		imports       bool
-		config        = parser.DefaultConfig
-		outputOptions []codegen.OutputFileOption
+		parserConfig  = parser.DefaultConfig
+		codegenConfig = codegen.DefaultConfig
 	)
 	pflag.BoolVarP(&format, "format", "f", false, "run go fmt")
 	pflag.BoolVarP(&fumpt, "fumpt", "F", false, "run gofumpt")
 	pflag.BoolVarP(&imports, "imports", "i", false, "run goimports")
-	pflag.BoolVarP(&config.Verbose, "verbose", "v", false, "verbose logging")
+	pflag.BoolVarP(&parserConfig.Verbose, "verbose", "v", false, "verbose logging")
 	pflag.Parse()
 
 	if pflag.NArg() > 0 {
@@ -37,13 +37,13 @@ func main() {
 	}
 
 	if fumpt {
-		outputOptions = append(outputOptions, codegen.WithGoFumpt())
+		codegenConfig.OutputFileOptions = append(codegenConfig.OutputFileOptions, codegen.WithGoFumpt())
 	}
 	if format {
-		outputOptions = append(outputOptions, codegen.WithGoFmt())
+		codegenConfig.OutputFileOptions = append(codegenConfig.OutputFileOptions, codegen.WithGoFmt())
 	}
 	if imports {
-		outputOptions = append(outputOptions, codegen.WithGoImports())
+		codegenConfig.OutputFileOptions = append(codegenConfig.OutputFileOptions, codegen.WithGoImports())
 	}
 
 	r, err := parser.DefaultConfig.Parse(directory)
@@ -73,12 +73,12 @@ func main() {
 		for _, s := range poly {
 			of, ok := out[s.TargetFile]
 			if !ok {
-				of = codegen.NewOutputFile(s.TargetFile, pkg, outputOptions...)
+				of = codegenConfig.NewOutputFile(s.TargetFile, pkg)
 				out[s.TargetFile] = of
 				defer of.Close()
 				cleanup = append(cleanup, s.TargetFile)
 			}
-			if config.Verbose {
+			if parserConfig.Verbose {
 				log.Printf("generating %s", s.Name)
 			}
 			for _, g := range codegen.All {

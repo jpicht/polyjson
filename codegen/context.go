@@ -12,13 +12,15 @@ import (
 type Context struct {
 	Imports map[string]string
 	Package *att.Package
+	Config  *Config
 	io.Writer
 }
 
-func NewContext(p *att.Package, w io.Writer) *Context {
+func (c *Config) NewContext(p *att.Package, w io.Writer) *Context {
 	return &Context{
-		Package: p,
 		Imports: map[string]string{},
+		Package: p,
+		Config:  c,
 		Writer:  w,
 	}
 }

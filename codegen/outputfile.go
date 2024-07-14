@@ -52,12 +52,16 @@ func WithGoFmt() OutputFileOption {
 	}
 }
 
-func NewOutputFile(filename string, p *att.Package, opts ...OutputFileOption) *OutputFile {
+func (c *Config) NewOutputFile(filename string, p *att.Package, opts ...OutputFileOption) *OutputFile {
 	buf := &bytes.Buffer{}
 	of := &OutputFile{
-		Context:  NewContext(p, buf),
+		Context:  c.NewContext(p, buf),
 		FileName: filename,
 		buffer:   buf,
+	}
+
+	for _, opt := range c.OutputFileOptions {
+		opt(of)
 	}
 
 	for _, opt := range opts {
