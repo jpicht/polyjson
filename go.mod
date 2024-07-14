@@ -12,6 +12,7 @@ require (
 	github.com/mailru/easyjson v0.7.7
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.8.1
+	go.uber.org/mock v0.4.0
 	golang.org/x/tools v0.22.0
 )
 
