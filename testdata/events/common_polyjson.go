@@ -27,7 +27,44 @@ type Event struct {
 	UpdateAttendance *UpdateAttendance `json:"update_attendance,omitempty"`
 }
 
-type EventSlice []Event
+type (
+	EventSlice   []Event
+	EventBuilder struct {
+		Common
+	}
+)
+
+func NewEvent(c Common) EventBuilder {
+	return EventBuilder{}
+}
+
+func (b EventBuilder) FailedLogin(value FailedLogin) Event {
+	return Event{
+		Common:      b.Common,
+		FailedLogin: &value,
+	}
+}
+
+func (b EventBuilder) Login(value Login) Event {
+	return Event{
+		Common: b.Common,
+		Login:  &value,
+	}
+}
+
+func (b EventBuilder) Logout(value Logout) Event {
+	return Event{
+		Common: b.Common,
+		Logout: &value,
+	}
+}
+
+func (b EventBuilder) UpdateAttendance(value UpdateAttendance) Event {
+	return Event{
+		Common:           b.Common,
+		UpdateAttendance: &value,
+	}
+}
 
 func (ps *Event) Accept(v EventVisitor) bool {
 	if ps.FailedLogin != nil {

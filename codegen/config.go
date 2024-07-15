@@ -11,6 +11,7 @@ var DefaultConfig = Config{
 		VisitorInterfaceGen{},
 		PolyStructGen{},
 		SliceTypeGen{},
+		PolyStructNewGen{},
 		AcceptFuncGen{},
 		MarshalFuncGen{},
 		UnmarshalFuncGen{},
