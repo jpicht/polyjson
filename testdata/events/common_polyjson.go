@@ -35,7 +35,7 @@ type (
 )
 
 func NewEvent(c Common) EventBuilder {
-	return EventBuilder{}
+	return EventBuilder{Common: c}
 }
 
 func (b EventBuilder) FailedLogin(value FailedLogin) Event {
@@ -64,6 +64,38 @@ func (b EventBuilder) UpdateAttendance(value UpdateAttendance) Event {
 		Common:           b.Common,
 		UpdateAttendance: &value,
 	}
+}
+
+func (s *EventSlice) Append(value Event) {
+	*s = append(*s, value)
+}
+
+func (s *EventSlice) AppendFailedLogin(c Common, value FailedLogin) {
+	*s = append(*s, Event{
+		Common:      c,
+		FailedLogin: &value,
+	})
+}
+
+func (s *EventSlice) AppendLogin(c Common, value Login) {
+	*s = append(*s, Event{
+		Common: c,
+		Login:  &value,
+	})
+}
+
+func (s *EventSlice) AppendLogout(c Common, value Logout) {
+	*s = append(*s, Event{
+		Common: c,
+		Logout: &value,
+	})
+}
+
+func (s *EventSlice) AppendUpdateAttendance(c Common, value UpdateAttendance) {
+	*s = append(*s, Event{
+		Common:           c,
+		UpdateAttendance: &value,
+	})
 }
 
 func (ps *Event) Accept(v EventVisitor) bool {

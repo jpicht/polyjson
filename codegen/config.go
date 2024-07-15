@@ -12,6 +12,7 @@ var DefaultConfig = Config{
 		PolyStructGen{},
 		SliceTypeGen{},
 		PolyStructNewGen{},
+		SliceAppendGen{},
 		AcceptFuncGen{},
 		MarshalFuncGen{},
 		UnmarshalFuncGen{},
