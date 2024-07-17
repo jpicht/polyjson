@@ -16,10 +16,10 @@ func JSONName(name string, tag reflect.StructTag) string {
 }
 
 func JSONTag(name string, tag reflect.StructTag) string {
-	if v, ok := tag.Lookup("json"); ok {
+	if v, ok := tag.Lookup("polyjson"); ok {
 		return v
 	}
-	if v, ok := tag.Lookup("polyjson"); ok {
+	if v, ok := tag.Lookup("json"); ok {
 		return v
 	}
 	return strcase.SnakeCase(name) + ",omitempty"
