@@ -18,5 +18,6 @@ var DefaultConfig = Config{
 		UnmarshalFuncGen{},
 		DefaultVisitorGen{},
 		VisitorFuncGen{},
+		SliceMarshalGen{},
 	},
 }
