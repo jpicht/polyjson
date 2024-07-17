@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/jpicht/polyjson/generator"
 	"github.com/jpicht/polyjson/parser"
@@ -164,6 +165,7 @@ func (UnmarshalFuncGen) commonFields(ctx *Context, p *generator.PolyStruct) erro
 func (UnmarshalFuncGen) withoutTypeField(ctx *Context, p *generator.PolyStruct) error {
 	ctx.Imports["github.com/mailru/easyjson/jlexer"] = "jlexer"
 	ctx.Imports["github.com/jpicht/polyjson"] = "polyjson"
+	ctx.Imports["fmt"] = "fmt"
 
 	fmt.Fprintf(ctx, "func (ps *%s) UnmarshalEasyJSON(in *jlexer.Lexer) {\n", p.Name)
 	fmt.Fprintf(ctx, "	isTopLevel := in.IsStart()\n")
@@ -182,6 +184,32 @@ func (UnmarshalFuncGen) withoutTypeField(ctx *Context, p *generator.PolyStruct) 
 	}
 	fmt.Fprintln(ctx)
 
+	needDecodeBuffer := false
+
+	for _, impl := range p.Impls {
+		if impl.Struct.Interfaces[parser.EasyJSONUnmarshaler] {
+			continue
+		}
+		if impl.Struct.Interfaces[parser.EncodingJSONUnmarshaler] {
+			continue
+		}
+		needDecodeBuffer = true
+	}
+
+	if needDecodeBuffer {
+		ctx.Imports["bytes"] = "bytes"
+		fmt.Fprintf(ctx, "	buf := &bytes.Buffer{}\n")
+		fmt.Fprintf(ctx, "	dec := json.NewDecoder(buf)\n")
+		fmt.Fprintf(ctx, "	dec.DisallowUnknownFields()\n")
+	}
+
+	fmt.Fprintf(ctx, "	wrapErr := func(err error, field string) error {\n")
+	fmt.Fprintf(ctx, "		if err != nil {\n")
+	fmt.Fprintf(ctx, "			err = fmt.Errorf(\"error parsing %s.%%s: %%w\", field, err)\n", p.Name)
+	fmt.Fprintf(ctx, "		}\n")
+	fmt.Fprintf(ctx, "		return err\n")
+	fmt.Fprintf(ctx, "	}\n")
+
 	fmt.Fprintf(ctx, "	in.Delim('{')\n")
 	fmt.Fprintf(ctx, "	for !in.IsDelim('}') {\n")
 	fmt.Fprintf(ctx, "		key := in.UnsafeFieldName(true)\n")
@@ -192,6 +220,7 @@ func (UnmarshalFuncGen) withoutTypeField(ctx *Context, p *generator.PolyStruct) 
 	fmt.Fprintf(ctx, "			continue\n")
 	fmt.Fprintf(ctx, "		}\n")
 	fmt.Fprintf(ctx, "		switch key {\n")
+
 	fmt.Fprintf(ctx, "		// implementations\n")
 	for _, impl := range p.Impls {
 		fmt.Fprintf(ctx, "		case %q:\n", JSONName(impl.Struct.Name, impl.Value.Tag))
@@ -207,12 +236,16 @@ func (UnmarshalFuncGen) withoutTypeField(ctx *Context, p *generator.PolyStruct) 
 		if impl.Struct.Interfaces[parser.EasyJSONUnmarshaler] {
 			fmt.Fprintf(ctx, "			ps.%s.UnmarshalEasyJSON(in)\n", impl.Struct.Name)
 		} else if impl.Struct.Interfaces[parser.EncodingJSONUnmarshaler] {
-			fmt.Fprintf(ctx, "			in.AddError(ps.%s.Unmarshal(in.Raw()))\n", impl.Struct.Name)
+			fmt.Fprintf(ctx, "			in.AddError(wrapErr(ps.%s.Unmarshal(in.Raw()), %q))\n", impl.Struct.Name, impl.Struct.Name)
 		} else {
-			fmt.Fprintf(ctx, "			in.AddError(json.Unmarshal(in.Raw(), ps.%s))\n", impl.Struct.Name)
+			fmt.Fprintf(ctx, "			buf.Write(in.Raw())\n")
+			fmt.Fprintf(ctx, "			in.AddError(wrapErr(dec.Decode(ps.%s), %q))\n", impl.Struct.Name, impl.Struct.Name)
+			fmt.Fprintf(ctx, "			buf.Reset()\n")
 		}
+
 		fmt.Fprintln(ctx)
 	}
+
 	if p.Common != nil && len(p.Common.Fields) > 0 {
 		fmt.Fprintf(ctx, "		// common fields from %s\n", p.Common.Name)
 		for _, field := range p.Common.Fields {
@@ -254,7 +287,7 @@ func (UnmarshalFuncGen) withoutTypeField(ctx *Context, p *generator.PolyStruct) 
 		fmt.Fprintf(ctx, "		default:\n")
 		fmt.Fprintf(ctx, "			in.AddError(&jlexer.LexerError{\n")
 		fmt.Fprintf(ctx, "				Offset: in.GetPos(),\n")
-		fmt.Fprintf(ctx, "				Reason: \"unknown field\",\n")
+		fmt.Fprintf(ctx, "				Reason: \"unknown field in %s.%s\",\n", filepath.Base(p.Package.Name), p.Name)
 		fmt.Fprintf(ctx, "				Data:   key,\n")
 		fmt.Fprintf(ctx, "			})\n")
 	}
