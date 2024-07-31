@@ -1,6 +1,6 @@
 module github.com/jpicht/polyjson
 
-go 1.22.5
+go 1.22
 
 require (
 	github.com/launchdarkly/go-jsonstream/v3 v3.1.0
@@ -19,7 +19,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
